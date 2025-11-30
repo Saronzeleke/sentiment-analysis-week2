@@ -1,40 +1,52 @@
 """
-Configuration for Ethiopian banks to analyze
+Configuration file for Bank Reviews Analysis Project
 """
+import os
+from dotenv import load_dotenv
 
-BANKS_CONFIG = {
-    "cbe": {
-        "app_id": "com.cbe.telebirr",
-        "name": "Commercial Bank of Ethiopia",
-        "country": "et",
-        "language": "en"
-    },
-    "awash": {
-        "app_id": "com.awash.bank",
-        "name": "Awash Bank",
-        "country": "et", 
-        "language": "en"
-    },
-    "dashen": {
-        "app_id": "com.dashen.sc",
-        "name": "Dashen Bank",
-        "country": "et",
-        "language": "en"
-    }
+# Load environment variables
+load_dotenv()
+
+# Google Play Store App IDs
+APP_IDS = {
+# env
+    'CBE': os.getenv('CBE_APP_ID', 'com.combanketh.mobilebanking'),
+    'Awash': os.getenv('AWASHPAY_APP_ID', 'com.sc.awashpay'),
+    'Amharabank': os.getenv('AMHARABANK_APP_ID', 'com.amharabank.Aba_mobile_banking')
+
 }
 
-# Analysis parameters
-SENTIMENT_THRESHOLDS = {
-    'positive': 0.6,
-    'negative': 0.4,
-    'neutral': (0.4, 0.6)
+# Bank Names Mapping
+BANK_NAMES = {
+    'CBE': 'Commercial Bank of Ethiopia',
+    'Awash': 'Awash Bank',
+    'Amharabank': 'Amharabank'
 }
 
-THEME_CATEGORIES = [
-    'User Interface & Experience',
-    'Transaction Performance', 
-    'Account Access & Security',
-    'Customer Support',
-    'App Reliability & Bugs',
-    'Feature Requests'
-]
+# Scraping Configuration
+SCRAPING_CONFIG = {
+    'reviews_per_bank': int(os.getenv('REVIEWS_PER_BANK', 400)),
+    'max_retries': int(os.getenv('MAX_RETRIES', 3)),
+    'lang': 'en',
+    'country': 'et'  # Ethiopia
+}
+
+# File Paths
+DATA_PATHS = {
+    'raw': 'data/raw data',
+    'processed': 'data/processed data',
+    'raw_reviews': 'data/raw data/reviews_raw.csv',
+    'processed_reviews': 'data/processed data/reviews_processed.csv',
+    'sentiment_results': 'data/processed data/reviews_with_sentiment.csv',
+    'final_results': 'data/processed data/reviews_final.csv',
+    'themes_results': 'data/processed data/thematic_analysis.csv'
+}
+
+
+
+
+
+
+
+
+
