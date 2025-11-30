@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-
-=======
->>>>>>> task-2
 import os
 # Google Play Store App IDs for Ethiopian Banks
 APP_IDS = {
