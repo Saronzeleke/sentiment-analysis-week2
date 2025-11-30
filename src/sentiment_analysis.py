@@ -1,4 +1,3 @@
-# src/sentiment_analysis.py
 """
 Sentiment and Thematic Analysis
 Task 2: Sentiment Analysis and Theme Identification
@@ -7,6 +6,7 @@ This script performs:
 - Sentiment analysis using distilBERT
 - Keyword extraction using TF-IDF
 - Theme clustering and identification
+- Comparison of multiple sentiment analysis methods
 """
 
 import sys
@@ -15,16 +15,18 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 import numpy as np
-from transformers import pipeline, AutoTokenizer, AutoModelForSequenceClassification
+from transformers import pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.cluster import KMeans
 import spacy
-import re
-from collections import Counter
-import matplotlib.pyplot as plt
-import seaborn as sns
 from tqdm import tqdm
 from config.banks_config import DATA_PATHS, ANALYSIS_CONFIG
+
+# Optional: VADER (will be used if installed)
+try:
+    from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+    VADER_AVAILABLE = True
+except ImportError:
+    VADER_AVAILABLE = False
 
 
 class SentimentAnalyzer:
@@ -61,7 +63,6 @@ class SentimentAnalyzer:
             print("✓ distilBERT sentiment model loaded")
         except Exception as e:
             print(f"WARNING: Failed to load distilBERT: {str(e)}")
-            print("Falling back to TextBlob...")
             self.sentiment_pipeline = None
 
         # Initialize spaCy for text processing
@@ -82,12 +83,10 @@ class SentimentAnalyzer:
         for text in tqdm(self.df['review_text'], desc="Analyzing sentiment"):
             try:
                 if self.sentiment_pipeline:
-                    # Use distilBERT
-                    result = self.sentiment_pipeline(text[:512])[0]  # Truncate for model limits
+                    result = self.sentiment_pipeline(text[:512])[0]
                     sentiment = result['label']
                     score = result['score']
                 else:
-                    # Fallback to simple rule-based approach
                     sentiment, score = self._basic_sentiment_analysis(text)
                 
                 sentiments.append(sentiment)
@@ -101,7 +100,6 @@ class SentimentAnalyzer:
         self.df['sentiment_label'] = sentiments
         self.df['sentiment_score'] = scores
 
-        # Convert to standardized labels
         self.df['sentiment'] = self.df['sentiment_label'].map({
             'POSITIVE': 'positive',
             'NEGATIVE': 'negative',
@@ -132,31 +130,26 @@ class SentimentAnalyzer:
         """Extract keywords using TF-IDF"""
         print("\n[2/4] Extracting keywords...")
 
-        # Group by bank for bank-specific analysis
         for bank in self.df['bank_name'].unique():
             print(f"\nAnalyzing keywords for {bank}...")
             bank_reviews = self.df[self.df['bank_name'] == bank]
             
-            # Use TF-IDF to extract important words
             vectorizer = TfidfVectorizer(
                 max_features=50,
                 stop_words='english',
-                ngram_range=(1, 2),  # Include bigrams
-                min_df=2  # Word must appear in at least 2 reviews
+                ngram_range=(1, 2),
+                min_df=2
             )
             
             try:
                 tfidf_matrix = vectorizer.fit_transform(bank_reviews['review_text'])
                 feature_names = vectorizer.get_feature_names_out()
-                
-                # Get top keywords
                 tfidf_scores = np.array(tfidf_matrix.mean(axis=0)).flatten()
                 top_indices = tfidf_scores.argsort()[-20:][::-1]
                 top_keywords = [feature_names[i] for i in top_indices]
                 
                 print(f"Top keywords for {bank}: {top_keywords[:10]}")
                 
-                # Store keywords for theme analysis
                 self.themes[bank] = {
                     'keywords': top_keywords,
                     'reviews': bank_reviews
@@ -172,24 +165,19 @@ class SentimentAnalyzer:
         theme_mapping = ANALYSIS_CONFIG['theme_keywords']
         
         for bank, bank_data in self.themes.items():
-            print(f"\nIdentifying themes for {bank}...")
-            
             theme_counts = {theme: 0 for theme in theme_mapping.keys()}
             theme_examples = {theme: [] for theme in theme_mapping.keys()}
             
-            # Count occurrences of theme-related keywords in reviews
             for _, review in bank_data['reviews'].iterrows():
                 review_text = review['review_text'].lower()
-                
                 for theme, keywords in theme_mapping.items():
                     for keyword in keywords:
                         if keyword in review_text:
                             theme_counts[theme] += 1
-                            if len(theme_examples[theme]) < 3:  # Keep 3 examples max
+                            if len(theme_examples[theme]) < 3:
                                 theme_examples[theme].append(review_text[:100] + "...")
                             break
             
-            # Get top 3-5 themes
             top_themes = sorted(theme_counts.items(), key=lambda x: x[1], reverse=True)[:5]
             
             print(f"Top themes for {bank}:")
@@ -217,7 +205,7 @@ class SentimentAnalyzer:
                 for keyword in keywords:
                     if keyword in review_text:
                         review_themes.append(theme)
-                        break  # Only count each theme once per review
+                        break
 
             assigned_themes.append(', '.join(review_themes) if review_themes else 'Other')
 
@@ -239,7 +227,6 @@ class SentimentAnalyzer:
             print(f"\n📊 {bank} - Analysis Summary")
             print(f"   Total Reviews: {total_reviews}")
             
-            # Sentiment analysis
             sentiment_counts = bank_data['sentiment'].value_counts()
             positive_pct = (sentiment_counts.get('positive', 0) / total_reviews) * 100
             negative_pct = (sentiment_counts.get('negative', 0) / total_reviews) * 100
@@ -247,11 +234,9 @@ class SentimentAnalyzer:
             print(f"   Positive Sentiment: {positive_pct:.1f}%")
             print(f"   Negative Sentiment: {negative_pct:.1f}%")
             
-            # Rating distribution
             avg_rating = bank_data['rating'].mean()
             print(f"   Average Rating: {avg_rating:.1f}/5")
             
-            # Top themes
             if bank in self.themes:
                 print(f"\n   🎯 Key Themes (Drivers & Pain Points):")
                 for theme, count in self.themes[bank]['top_themes'][:4]:
@@ -267,11 +252,9 @@ class SentimentAnalyzer:
         try:
             os.makedirs(os.path.dirname(DATA_PATHS['sentiment_results']), exist_ok=True)
             
-            # Save sentiment analysis results
             self.df.to_csv(DATA_PATHS['sentiment_results'], index=False)
             print(f"✓ Sentiment analysis saved to: {DATA_PATHS['sentiment_results']}")
 
-            # Save thematic analysis summary
             theme_summary = []
             for bank, bank_data in self.themes.items():
                 for theme, count in bank_data.get('top_themes', []):
@@ -314,6 +297,98 @@ class SentimentAnalyzer:
         else:
             print("\n✗ Analysis completed with errors!")
             return False
+
+
+def _basic_sentiment_analysis(text):
+    """Standalone basic sentiment analysis for comparison"""
+    positive_words = ['good', 'great', 'excellent', 'amazing', 'love', 'best', 'easy', 'nice', 'perfect']
+    negative_words = ['bad', 'terrible', 'awful', 'hate', 'worst', 'slow', 'crash', 'error', 'problem']
+    text_lower = text.lower()
+    pos = sum(1 for w in positive_words if w in text_lower)
+    neg = sum(1 for w in negative_words if w in text_lower)
+    if pos > neg:
+        return 'positive', 0.7
+    elif neg > pos:
+        return 'negative', 0.7
+    else:
+        return 'neutral', 0.5
+
+
+def compare_sentiment_methods(df, sample_size=200):
+    """
+    Compare multiple sentiment analysis methods on a sample of reviews.
+    
+    Returns a DataFrame with columns:
+    - review_id
+    - review_text
+    - method (e.g., 'distilBERT', 'Rule-Based', 'VADER')
+    - sentiment_label
+    - confidence_score
+    """
+    sample_df = df.sample(n=min(sample_size, len(df)), random_state=42).copy()
+    results = []
+
+    # 1. distilBERT
+    try:
+        bert_pipe = pipeline(
+            "sentiment-analysis",
+            model="distilbert-base-uncased-finetuned-sst-2-english"
+        )
+        for _, row in sample_df.iterrows():
+            text = str(row['review_text'])[:512]
+            if not text.strip():
+                continue
+            result = bert_pipe(text)[0]
+            results.append({
+                'review_id': row.get('review_id', ''),
+                'review_text': text,
+                'method': 'distilBERT',
+                'sentiment_label': result['label'].lower().replace('label_0', 'negative').replace('label_1', 'positive'),
+                'confidence_score': result['score']
+            })
+    except Exception as e:
+        print(f"⚠️ distilBERT comparison failed: {e}")
+
+    # 2. Rule-Based
+    for _, row in sample_df.iterrows():
+        text = str(row['review_text'])
+        if not text.strip():
+            continue
+        label, score = _basic_sentiment_analysis(text)
+        results.append({
+            'review_id': row.get('review_id', ''),
+            'review_text': text,
+            'method': 'Rule-Based',
+            'sentiment_label': label,
+            'confidence_score': score
+        })
+
+    # 3. VADER (if available)
+    if VADER_AVAILABLE:
+        vader = SentimentIntensityAnalyzer()
+        for _, row in sample_df.iterrows():
+            text = str(row['review_text'])
+            if not text.strip():
+                continue
+            scores = vader.polarity_scores(text)
+            compound = scores['compound']
+            if compound >= 0.05:
+                label = 'positive'
+            elif compound <= -0.05:
+                label = 'negative'
+            else:
+                label = 'neutral'
+            results.append({
+                'review_id': row.get('review_id', ''),
+                'review_text': text,
+                'method': 'VADER',
+                'sentiment_label': label,
+                'confidence_score': abs(compound)
+            })
+    else:
+        print("⚠️ VADER not installed. Skipping.")
+
+    return pd.DataFrame(results)
 
 
 def main():
