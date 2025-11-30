@@ -13,6 +13,8 @@ from tqdm import tqdm
 import logging
 from typing import Dict, List, Optional
 from config.banks_config import BANKS_CONFIG
+
+# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -116,8 +118,8 @@ class ReviewScraper:
 def save_raw_data(df: pd.DataFrame, filename: str = "raw_reviews.csv"):
     """Save raw scraped data to CSV"""
     try:
-        df.to_csv(f"data/raw data/{filename}", index=False)
-        logger.info(f"Raw data saved to data/raw data/{filename}")
+        df.to_csv(f"data/raw/{filename}", index=False)
+        logger.info(f"Raw data saved to data/raw/{filename}")
     except Exception as e:
         logger.error(f"Error saving raw data: {str(e)}")
 
