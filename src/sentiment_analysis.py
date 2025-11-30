@@ -298,6 +298,21 @@ class SentimentAnalyzer:
             print("\n✗ Analysis completed with errors!")
             return False
 
+    def calculate_sentiment_metrics(self, df=None):
+        """Calculate sentiment metrics"""
+        df = df if df is not None else self.df
+        if df is None:
+            return {}
+        
+        total = len(df)
+        counts = df['sentiment'].value_counts()
+        return {
+            'total_reviews': total,
+            'positive_pct': counts.get('positive', 0) / total * 100,
+            'negative_pct': counts.get('negative', 0) / total * 100,
+            'neutral_pct': counts.get('neutral', 0) / total * 100,
+        }
+
 
 def _basic_sentiment_analysis(text):
     """Standalone basic sentiment analysis for comparison"""
