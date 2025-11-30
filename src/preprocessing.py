@@ -7,7 +7,7 @@ import numpy as np
 import re
 from datetime import datetime
 import logging
-from typing import Tuple
+from typing import Tuple, Dict
 
 logger = logging.getLogger(__name__)
 
