@@ -1,6 +1,3 @@
-"""
-Thematic Analysis Module for identifying key themes in reviews
-"""
 
 import pandas as pd
 import numpy as np
@@ -13,7 +10,7 @@ from collections import Counter
 import re
 from typing import Dict, List, Tuple
 import logging
-from config.banks_config import THEME_CATEGORIES
+#from config.banks_config import THEME_CATEGORIES
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +61,8 @@ class ThematicAnalyzer:
             vectorizer = TfidfVectorizer(
                 max_features=max_features,
                 stop_words='english',
-                ngram_range=(1, 2),  # Include unigrams and bigrams
-                min_df=2  # Ignore terms that appear in only 1 document
+                ngram_range=(1, 2),  
+                min_df=2  
             )
             
             tfidf_matrix = vectorizer.fit_transform(texts)
@@ -95,8 +92,8 @@ class ThematicAnalyzer:
             doc = self.nlp(str(text))
             
             # Extract noun phrases
-            for chunk in doc.nouns:
-                if len(chunk.text.split()) <= 3:  # Limit phrase length
+            for chunk in doc.noun_chunks:
+                if len(chunk.text.split()) <= 3:  
                     phrases.append(chunk.text.lower())
             
             # Extract verb phrases and other patterns
@@ -113,7 +110,8 @@ class ThematicAnalyzer:
     
     def map_keywords_to_themes(self, keywords: List[str]) -> Dict[str, List[str]]:
         """Map extracted keywords to predefined themes"""
-        theme_mappings = {theme: [] for theme in THEME_CATEGORIES}
+        theme_mappings = {theme: [] for theme in self.theme_keywords.keys()}
+
         
         for keyword in keywords:
             keyword_lower = keyword.lower()
@@ -181,7 +179,7 @@ class ThematicAnalyzer:
             'total_reviews_analyzed': len(reviews_text),
             'themes_identified': theme_mappings,
             'theme_examples': theme_examples,
-            'top_keywords': all_keywords[:20]  # Top 20 keywords
+            'top_keywords': all_keywords[:20]  
         }
         
         return analysis_result
@@ -224,8 +222,8 @@ class ThematicAnalyzer:
         
         results = {}
         
-        for bank_name in sentiment_df['bank'].unique():
-            bank_df = sentiment_df[sentiment_df['bank'] == bank_name]
+        for bank_name in sentiment_df['bank_name'].unique():
+            bank_df = sentiment_df[sentiment_df['bank_name'] == bank_name]
             bank_analysis = self.analyze_bank_themes(bank_df, bank_name)
             results[bank_name] = bank_analysis
         
