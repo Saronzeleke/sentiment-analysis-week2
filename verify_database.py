@@ -1,8 +1,3 @@
-#!/usr/bin/env python3
-"""
-Script to verify database integrity and show statistics.
-"""
-
 from src.database.database_connection import DatabaseConnection
 from src.database.data_loader import ReviewDataLoader
 import pandas as pd
