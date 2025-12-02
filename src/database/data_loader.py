@@ -5,9 +5,15 @@ sys.path.append(str(pathlib.Path(__file__).parent.parent))
 
 import pandas as pd
 import logging
+<<<<<<< HEAD
 from typing import Dict, Any
 from database.database_connection import DatabaseConnection, create_tables, insert_banks_data
 
+=======
+from typing import List, Dict, Any
+from .database_connection import DatabaseConnection
+import os 
+>>>>>>> task-4
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
