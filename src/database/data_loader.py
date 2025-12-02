@@ -184,7 +184,7 @@ class ReviewDataLoader:
 def main():
     """Main function to load data into database"""
     # Configuration
-    CSV_PATH = "../data/processed/processed_reviews.csv"
+    CSV_PATH = r"C:\Users\admin\sentiment-analysis-week2\data\processed_data\reviews_processed.csv"
     SQL_DUMP_PATH = "../data/sql_dump/bank_reviews.sql"
     
     # Initialize database connection

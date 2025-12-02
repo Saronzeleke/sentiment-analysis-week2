@@ -1,14 +1,3 @@
-"""
-Sentiment and Thematic Analysis
-Task 2: Sentiment Analysis and Theme Identification
-
-This script performs:
-- Sentiment analysis using distilBERT
-- Keyword extraction using TF-IDF
-- Theme clustering and identification
-- Comparison of multiple sentiment analysis methods
-"""
-
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
