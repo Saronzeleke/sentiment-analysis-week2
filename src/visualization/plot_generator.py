@@ -1,4 +1,3 @@
-
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
@@ -6,10 +5,14 @@ import numpy as np
 from typing import Dict, List, Optional, Tuple, Any
 import logging
 from matplotlib.figure import Figure
+from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
 
+# Configure logging to show warnings/errors in console
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class BankingVisualizations:
     """Generate visualizations for banking app insights"""
@@ -28,9 +31,11 @@ class BankingVisualizations:
             'Dashen': '#2ca02c',   # Green
             'Commercial Bank of Ethiopia': '#1f77b4',
             'Bank of Abyssinia': '#ff7f0e',
-            'positive': '#4caf50', # Green
-            'negative': '#f44336', # Red
-            'neutral': '#ffc107'   # Yellow
+            'Amhara Bank': '#9467bd',  # Purple
+            'Awash Bank': '#8c564b',   # Brown
+            'positive': '#4caf50',     # Green
+            'negative': '#f44336',     # Red
+            'neutral': '#ffc107'       # Yellow
         }
         
     def create_sentiment_distribution(self, df: pd.DataFrame) -> Figure:
@@ -53,14 +58,11 @@ class BankingVisualizations:
         banks = df['bank_name'].unique()[:3]  # Limit to 3 banks
         
         for idx, bank in enumerate(banks):
-            if idx >= 3:  # Only plot first 3 banks
-                break
-                
             ax = axes[idx]
             bank_data = df[df['bank_name'] == bank]
             
             sentiment_counts = bank_data['sentiment_label'].value_counts()
-            colors = [self.colors.get(sent, '#757575') for sent in sentiment_counts.index]
+            colors = [self.colors.get(sent.lower(), '#757575') for sent in sentiment_counts.index]
             
             wedges, texts, autotexts = ax.pie(
                 sentiment_counts.values,
@@ -160,16 +162,16 @@ class BankingVisualizations:
         banks = list(drivers_data.keys())
         n_banks = len(banks)
         
-        fig, axes = plt.subplots(2, n_banks, figsize=(5 * n_banks, 8))
+        fig, axes = plt.subplots(2, n_banks if n_banks > 1 else 1, figsize=(5 * max(n_banks, 1), 8))
         fig.suptitle('Satisfaction Drivers and Pain Points Analysis', 
                     fontsize=16, fontweight='bold')
         
         if n_banks == 1:
-            axes = axes.reshape(2, 1)
+            axes = np.array([axes]) if n_banks == 1 and len(axes) == 2 else axes.reshape(2, 1)
         
         for idx, bank in enumerate(banks):
             # Drivers subplot
-            ax1 = axes[0, idx]
+            ax1 = axes[0] if n_banks == 1 else axes[0, idx]
             drivers = drivers_data[bank].get('drivers', [])
             
             if drivers:
@@ -192,7 +194,7 @@ class BankingVisualizations:
                 ax1.axis('off')
             
             # Pain points subplot
-            ax2 = axes[1, idx]
+            ax2 = axes[1] if n_banks == 1 else axes[1, idx]
             pain_points = drivers_data[bank].get('pain_points', [])
             
             if pain_points:
@@ -275,7 +277,7 @@ class BankingVisualizations:
         Args:
             df: DataFrame with review text
             bank_name: Name of the bank
-            sentiment: Optional sentiment filter
+            sentiment: Optional sentiment filter (expects 'positive', 'negative', 'neutral')
             
         Returns:
             Matplotlib Figure object
@@ -293,12 +295,13 @@ class BankingVisualizations:
         # Filter data
         mask = df['bank_name'] == bank_name
         if sentiment:
+            # Ensure sentiment_label is lowercase for matching
             mask &= df['sentiment_label'] == sentiment
         
         text_data = df[mask]['review_text'].dropna()
         
         if len(text_data) == 0:
-            logger.warning(f"No data for {bank_name} with sentiment {sentiment}")
+            logger.warning(f"No data for {bank_name} with sentiment '{sentiment}'")
             return None
         
         # Combine all text
@@ -374,8 +377,8 @@ class BankingVisualizations:
         for i, priority in enumerate(priorities):
             if priority in priority_counts.columns:
                 offset = width * i
-                bars = ax1.bar(x + offset, priority_counts[priority], width, 
-                              label=priority, color=colors[i])
+                ax1.bar(x + offset, priority_counts[priority], width, 
+                        label=priority, color=colors[i])
         
         ax1.set_title('Recommendations by Priority Level', fontweight='bold')
         ax1.set_xlabel('Bank')
@@ -403,114 +406,73 @@ class BankingVisualizations:
         plt.tight_layout()
         return fig
     
-    def save_visualization(self, fig: Figure, filename: str, 
-                          output_dir: str = './reports/visualizations') -> bool:
+    def save_visualization(self, fig: Figure, filename: str,
+                          output_dir: str = r'C:\Users\admin\sentiment-analysis-week2\src\reports') -> bool:
         """
         Save visualization to file.
-        
-        Args:
-            fig: Matplotlib Figure object
-            filename: Name of the output file
-            output_dir: Directory to save the file
-            
-        Returns:
-            True if successful, False otherwise
         """
-        import os
-        
         try:
-            # Create output directory if it doesn't exist
-            os.makedirs(output_dir, exist_ok=True)
-            
-            # Save the figure
-            filepath = os.path.join(output_dir, filename)
+            Path(output_dir).mkdir(parents=True, exist_ok=True)
+            filepath = Path(output_dir) / filename
             fig.savefig(filepath, dpi=300, bbox_inches='tight')
             plt.close(fig)
-            
             logger.info(f"Saved visualization: {filepath}")
             return True
-            
         except Exception as e:
             logger.error(f"Failed to save visualization {filename}: {e}")
             return False
     
     def generate_all_visualizations(self, df: pd.DataFrame, insights: Dict[str, Any],
-                                   output_dir: str = './reports/visualizations') -> Dict[str, bool]:
+                                   output_dir: str = r'C:\Users\admin\sentiment-analysis-week2\src\reports') -> Dict[str, bool]:
         """
         Generate all visualizations and save to files.
-        
-        Args:
-            df: DataFrame with analysis data
-            insights: Dictionary containing analysis insights
-            output_dir: Directory to save visualizations
-            
-        Returns:
-            Dictionary with visualization names and success status
         """
         logger.info(f"Generating all visualizations to {output_dir}")
-        
         results = {}
-        
+
         # 1. Sentiment distribution
         fig1 = self.create_sentiment_distribution(df)
         if fig1:
-            results['sentiment_distribution'] = self.save_visualization(
-                fig1, 'sentiment_distribution.png', output_dir
-            )
-        
+            results['sentiment_distribution'] = self.save_visualization(fig1, 'sentiment_distribution.png', output_dir)
+
         # 2. Rating comparison
         fig2 = self.create_rating_comparison(df)
         if fig2:
-            results['rating_comparison'] = self.save_visualization(
-                fig2, 'rating_comparison.png', output_dir
-            )
-        
+            results['rating_comparison'] = self.save_visualization(fig2, 'rating_comparison.png', output_dir)
+
         # 3. Drivers and pain points
         drivers_data = insights.get('drivers_pain_points', {})
         fig3 = self.create_drivers_pain_points_chart(drivers_data)
         if fig3:
-            results['drivers_pain_points'] = self.save_visualization(
-                fig3, 'drivers_pain_points.png', output_dir
-            )
-        
+            results['drivers_pain_points'] = self.save_visualization(fig3, 'drivers_pain_points.png', output_dir)
+
         # 4. Sentiment trend
         fig4 = self.create_sentiment_trend_chart(df)
         if fig4:
-            results['sentiment_trend'] = self.save_visualization(
-                fig4, 'sentiment_trend.png', output_dir
-            )
-        
+            results['sentiment_trend'] = self.save_visualization(fig4, 'sentiment_trend.png', output_dir)
+
         # 5. Recommendations chart
         recommendations = insights.get('recommendations', {})
         fig5 = self.create_recommendations_chart(recommendations)
         if fig5:
-            results['recommendations'] = self.save_visualization(
-                fig5, 'recommendations.png', output_dir
-            )
-        
+            results['recommendations'] = self.save_visualization(fig5, 'recommendations.png', output_dir)
+
         # 6. Word clouds for each bank
         if 'bank_name' in df.columns:
-            for bank in df['bank_name'].unique()[:3]:  # Limit to 3 banks
-                # Positive sentiment word cloud
+            for bank in df['bank_name'].unique()[:3]:
+                # Positive
                 fig_pos = self.create_word_cloud(df, bank, 'positive')
                 if fig_pos:
-                    results[f'wordcloud_{bank}_positive'] = self.save_visualization(
-                        fig_pos, f'wordcloud_{bank}_positive.png', output_dir
-                    )
-                
-                # Negative sentiment word cloud
+                    results[f'wordcloud_{bank}_positive'] = self.save_visualization(fig_pos, f'wordcloud_{bank}_positive.png', output_dir)
+                # Negative
                 fig_neg = self.create_word_cloud(df, bank, 'negative')
                 if fig_neg:
-                    results[f'wordcloud_{bank}_negative'] = self.save_visualization(
-                        fig_neg, f'wordcloud_{bank}_negative.png', output_dir
-                    )
-        
-        # Log results
-        successful = sum(1 for success in results.values() if success)
-        total = len(results)
-        
-        logger.info(f"Generated {successful}/{total} visualizations successfully")
-        
+                    results[f'wordcloud_{bank}_negative'] = self.save_visualization(fig_neg, f'wordcloud_{bank}_negative.png', output_dir)
+                # Neutral (optional)
+                fig_neu = self.create_word_cloud(df, bank, 'neutral')
+                if fig_neu:
+                    results[f'wordcloud_{bank}_neutral'] = self.save_visualization(fig_neu, f'wordcloud_{bank}_neutral.png', output_dir)
+
         return results
 
 
@@ -554,7 +516,7 @@ def plot_rating_vs_sentiment(df: pd.DataFrame, bank_name: Optional[str] = None) 
         ax.plot(plot_data['rating'].sort_values(), p(plot_data['rating'].sort_values()), 
                 "r--", alpha=0.8, label=f'Trend: y = {z[0]:.3f}x + {z[1]:.3f}')
         ax.legend()
-    except:
+    except Exception:
         pass
     
     plt.tight_layout()
@@ -597,3 +559,27 @@ def plot_monthly_review_volume(df: pd.DataFrame) -> Figure:
     except Exception as e:
         logger.error(f"Error creating monthly review volume plot: {e}")
         return None
+
+
+if __name__ == "__main__":
+    # Load your data
+    df = pd.read_csv(r"C:\Users\admin\sentiment-analysis-week2\data\processed_data\reviews_with_sentiment.csv")
+    
+    # 🔑 CRITICAL FIX: Normalize sentiment_label to lowercase to match filtering logic
+    if 'sentiment_label' in df.columns:
+        df['sentiment_label'] = df['sentiment_label'].str.lower()
+    else:
+        logger.error("Column 'sentiment_label' not found in data.")
+        exit(1)
+    
+    # Provide insights (can be empty, but structure must exist)
+    insights = {
+        'drivers_pain_points': {},
+        'recommendations': {}
+    }
+    
+    viz = BankingVisualizations()
+    results = viz.generate_all_visualizations(df, insights)
+    print("\n✅ Visualization Results:")
+    for name, success in results.items():
+        print(f"  - {name}: {'Saved' if success else 'Failed'}")
