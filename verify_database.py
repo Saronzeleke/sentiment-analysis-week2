@@ -26,7 +26,6 @@ class ReviewDataLoader:
         try:
             df = pd.read_csv(csv_path)
 
-            # Data validation
             required_columns = ['bank_name', 'review_text', 'rating', 'review_date',
                                 'sentiment_label', 'sentiment_score']
 
@@ -34,7 +33,6 @@ class ReviewDataLoader:
             if missing_cols:
                 raise ValueError(f"Missing required columns: {missing_cols}")
 
-            # Clean data
             df['review_text'] = df['review_text'].fillna('').astype(str)
             df['sentiment_label'] = df['sentiment_label'].fillna('neutral').astype(str)
             df['sentiment_score'] = pd.to_numeric(df['sentiment_score'], errors='coerce').fillna(0)
@@ -53,7 +51,6 @@ class ReviewDataLoader:
         try:
             query = "SELECT bank_id, bank_name FROM banks"
             results = self.db.execute_query(query)
-            # Normalize bank names (lowercase + strip)
             return {row['bank_name'].strip().lower(): row['bank_id'] for row in results}
         except Exception as e:
             logger.error(f"Failed to get bank mapping: {e}")
@@ -62,9 +59,10 @@ class ReviewDataLoader:
     def insert_or_create_bank(self, bank_name: str) -> int:
         """Insert a new bank if missing and return its bank_id"""
         try:
-            insert_query = "INSERT INTO banks (bank_name) VALUES (%s) RETURNING bank_id"
+            # FIX: Include app_name to satisfy NOT NULL constraint
+            insert_query = "INSERT INTO banks (bank_name, app_name) VALUES (%s, %s) RETURNING bank_id"
             with self.db.connection.cursor() as cursor:
-                cursor.execute(insert_query, (bank_name,))
+                cursor.execute(insert_query, (bank_name, ""))  # empty string as placeholder
                 bank_id = cursor.fetchone()[0]
                 self.db.connection.commit()
                 logger.info(f"Inserted new bank: {bank_name} with ID {bank_id}")
@@ -75,7 +73,7 @@ class ReviewDataLoader:
             return None
 
     def insert_reviews(self, df: pd.DataFrame, batch_size: int = 100) -> int:
-        """Insert reviews in batches for better performance with automatic bank creation"""
+        """Insert reviews in batches with automatic bank creation"""
 
         bank_mapping = self.get_bank_mapping()
         records = []
@@ -86,7 +84,6 @@ class ReviewDataLoader:
             bank_id = bank_mapping.get(normalized_name)
 
             if not bank_id:
-                # Bank missing: create it
                 bank_id = self.insert_or_create_bank(row_bank_name)
                 if bank_id:
                     bank_mapping[normalized_name] = bank_id
@@ -122,9 +119,8 @@ class ReviewDataLoader:
                 with self.db.connection.cursor() as cursor:
                     cursor.executemany(insert_query, batch)
                     self.db.connection.commit()
-                    batch_inserted = len(batch)
-                    total_inserted += batch_inserted
-                    logger.info(f"Inserted batch {i//batch_size + 1}: {batch_inserted} records")
+                    total_inserted += len(batch)
+                    logger.info(f"Inserted batch {i//batch_size + 1}: {len(batch)} records")
             except Exception as e:
                 logger.error(f"Failed to insert batch {i//batch_size + 1}: {e}")
                 self.db.connection.rollback()
@@ -133,8 +129,6 @@ class ReviewDataLoader:
         return total_inserted
 
     def verify_data_integrity(self) -> Dict[str, Any]:
-        """Run integrity checks and return statistics"""
-
         queries = {
             'total_reviews': "SELECT COUNT(*) as count FROM reviews",
             'reviews_per_bank': """
@@ -177,9 +171,7 @@ class ReviewDataLoader:
         return results
 
     def generate_sql_dump(self, output_path: str) -> None:
-        """Generate SQL dump of the database"""
         import subprocess
-
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
         dump_cmd = [
@@ -203,15 +195,16 @@ class ReviewDataLoader:
 
 def main():
     CSV_PATH = r"C:\Users\admin\sentiment-analysis-week2\data\processed_data\reviews_with_sentiment.csv"
-    SQL_DUMP_PATH = "../data/sql_dump/bank_reviews.sql"
+    SQL_DUMP_PATH = r"C:\Users\admin\sentiment-analysis-week2\data\sql_dump\bank_reviews.sql"
 
     db = DatabaseConnection()
     try:
         if not db.connect():
             raise ConnectionError("Failed to connect to database")
 
+        # Optional: Comment out insert_banks_data to avoid pre-defining only 3 banks
         create_tables(db)
-        insert_banks_data(db)
+        # insert_banks_data(db)  # ← optional: remove if you auto-create all banks
 
         loader = ReviewDataLoader(db)
         df = loader.load_csv_data(CSV_PATH)
@@ -224,7 +217,8 @@ def main():
 
         stats = loader.verify_data_integrity()
         print("\nDATA INTEGRITY STATS:")
-        print(stats)
+        for key, value in stats.items():
+            print(f"{key}: {value}")
 
         loader.generate_sql_dump(SQL_DUMP_PATH)
         print(f"\nSQL dump saved to: {SQL_DUMP_PATH}")
