@@ -1,10 +1,15 @@
+import os 
+import sys
+import pathlib
+sys.path.append(str(pathlib.Path(__file__).parent.resolve("src")))
+import psycopg2
+from psycopg2.extras import RealDictCursor
 import pandas as pd
 import numpy as np
 from datetime import datetime
 import logging
 from typing import List, Dict, Any
-from .database_connection import DatabaseConnection
-
+from src.database.database_connection import DatabaseConnection, create_tables, insert_banks_data
 logger = logging.getLogger(__name__)
 
 class ReviewDataLoader:
