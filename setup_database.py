@@ -1,9 +1,3 @@
-#!/usr/bin/env python3
-"""
-Database setup script for banking reviews sentiment analysis.
-Run this script to initialize the PostgreSQL database.
-"""
-
 import subprocess
 import sys
 import os
