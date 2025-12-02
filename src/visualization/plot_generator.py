@@ -1,12 +1,3 @@
-# Save this as: src/visualization/plot_generator.py
-
-"""
-Visualization Generator for Banking Apps Sentiment Analysis
-Senior Data Scientist Implementation - Task 4
-
-This module contains reusable visualization functions for creating
-plots and charts for the insights report.
-"""
 
 import matplotlib.pyplot as plt
 import seaborn as sns
