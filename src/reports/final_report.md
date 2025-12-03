@@ -65,12 +65,12 @@ This analysis examines customer satisfaction for mobile banking apps of three ma
 ### 3.1 Commercial Bank of Ethiopia (CBE)
 **Primary Satisfaction Drivers:**
 
-- **General Satisfaction:** Mentioned in 10 positive reviews  
-  *Key Insight:* General Satisfaction is a significant strength for CBE  
-  *Sample Feedback:* "No sample available" 
-- **General Satisfaction:** Mentioned in 10 positive reviews  
-  *Key Insight:* General Satisfaction is a significant strength for CBE  
-  *Sample Feedback:* "No sample available" 
+- **General Satisfaction:** Mentioned in 10 positive reviews
+  *Key Insight:* General Satisfaction is a significant strength for CBE
+  *Sample Feedback:* "Sample review not available" 
+- **General Satisfaction:** Mentioned in 10 positive reviews
+  *Key Insight:* General Satisfaction is a significant strength for CBE
+  *Sample Feedback:* "Sample review not available" 
 ### 3.2 Bank of Abyssinia (BOA)
 **Primary Satisfaction Drivers:**
 - Fast app performance
@@ -122,8 +122,8 @@ This analysis examines customer satisfaction for mobile banking apps of three ma
 3. **Optimize Performance:** Reduce loading times and improve app responsiveness
 
 **CBE-Specific:**
-- Address performance bottlenecks
-- Simplify user interface
+- Improve transaction validation and error handling
+- Add real-time transaction status notifications
 
 **BOA-Specific:**
 - Fix transaction validation issues
@@ -198,12 +198,13 @@ This analysis provides actionable insights that can:
 - **Visualization:** Matplotlib and Seaborn for charts
 
 ### Appendix B: Generated Visualizations
-5 visualizations generated and saved in the `C:/Users/admin/sentiment-analysis-week2/src/reports/visualizations/` directory:
+5 visualizations generated and saved in the reports directory:
 1. Sentiment Analysis Charts
 2. Rating Comparison Plots
 3. Drivers and Pain Points Visualization
 4. Word Clouds for Each Bank
 5. Time Series Analysis Charts
+
 ### Appendix C: Data Statistics
 - **Total Reviews Analyzed:** 783
 - **Analysis Period:** 2023-06-18 to 2025-12-01
@@ -213,8 +214,8 @@ This analysis provides actionable insights that can:
 ### Appendix D: Contact Information
 **Analysis Team:** Senior Data Science Team  
 **Report Version:** 1.0  
-**Last Updated:** 2025-12-03 12:15:04  
-**Repository:** https://github.com/Saronzeleke/sentiment-analysis-week2.git
+**Last Updated:** 2025-12-03 13:52:51  
+**Repository:** https://github.com/Saronzeleke/sentiment-analysis-week2.git  
 
 ---
 
