@@ -1,273 +1,389 @@
-# Ethiopian Bank Mobile App Reviews Analysis
+## Banking Apps Sentiment Analysis Project
 
-## 📊 Project Overview
+## Project Overview
+This project conducts a comprehensive sentiment analysis of customer reviews for mobile banking applications from three major Ethiopian 
 
-This project analyzes customer reviews from Google Play Store for three major Ethiopian banks to identify satisfaction drivers and pain 
+banks: Commercial Bank of Ethiopia (CBE), Bank of Abyssinia (BOA), and Dashen Bank. Utilizing reviews scraped from the Google Play Store,
 
-points in their mobile banking applications.
+ the project implements a full data science pipeline, encompassing data collection, preprocessing, sentiment and thematic analysis, 
 
-### 🎯 Business Objective
+database implementation, and derivation of actionable insights.
 
-Help Ethiopian banks improve their mobile apps by understanding customer feedback and identifying key areas for improvement.
+## Project Objectives
 
-### 📈 Key Performance Indicators (KPIs)
+The project is divided into four key tasks, all of which have been successfully completed:
 
-- **Proactivity**: Sharing scraping/NLP references and methodologies
+Task 1: Data Collection and Preprocessing – Completed
 
-- **Data Quality**: 1,200+ clean reviews with <5% errors
+Task 2: Sentiment and Thematic Analysis – Completed
 
-- **Insights**: 3+ drivers/pain points per bank identified
+Task 3: PostgreSQL Database Implementation – Completed
 
-- **Clarity**: Stakeholder-friendly visualizations and reporting
+Task 4: Insights and Recommendations – Completed
 
-## 🏗️ Project Structure
+## Project Structure
 
-ethiopian-bank-reviews-analysis/
+sentiment-analysis-week2/
 
-├── config/ # Configuration files
+├── data/
 
-├── data/ # Data storage
+│   ├── raw/                  # Raw scraped review data
 
-├── notebooks/ # Jupyter notebooks for analysis
+│   └── processed/            # Cleaned and analyzed datasets (e.g., banking_reviews.csv, reviews_with_sentiment.csv)
 
-├── src/ # Source code
+├── scripts/                  # Python scripts for each task
 
-├── tests/ # Test cases
+│   ├── task1_collect.py      # Data scraping and preprocessing
 
-├── requirements.txt # Python dependencies
+│   ├── task2_analyze.py      # Sentiment and thematic analysis
 
-└── README.md # Project documentation
+│   ├── task3_database.py     # Database setup and data insertion
 
-## 🚀 Quick Start
+│   └── task4_insights.py     # Insights generation and visualization
 
-### Prerequisites
+├── notebooks/                # Jupyter notebooks for interactive analysis
 
-- Python 3.8+
+│   └── task4_insights.ipynb  # Exploratory analysis for Task 4
 
-- Git
+├── reports/                  # Generated reports and visualizations
 
-### Installation
+│   ├── final_report.md       # Comprehensive 10+ page project report
 
-1. **Clone the repository**
+│   ├── visualizations/       # Charts and plots (e.g., sentiment distribution, word clouds)
 
- [git clone https://github.com/Saronzeleke/sentiment-analysis-week2.git]
+│   └── task4_insights.json   # Raw insights data
 
-   cd sentiment-analysis-week2
+├── src/                      # Source code modules
 
-2. **Create virtual environment**
+│   ├── data/                 # Data handling utilities (scraper.py, preprocessor.py)
 
- python -m venv venv
+│   └── nlp/                  # NLP modules (sentiment.py, themes.py)
 
- source venv/bin/activate  # On Windows: venv\Scripts\activate
+├── .env.example              # Example environment configuration
 
-3. **Install dependencies**
+├── requirements.txt          # Core dependencies
 
- pip install -r requirements.txt
+├── requirements_task4.txt    # Additional dependencies for Task 4
 
- python -m spacy download en_core_web_sm
+├── bank_reviews_schema.sql   # SQL dump for database schema
 
-4. **Set up environment variables**
+├── setup_database.py         # Comprehensive database setup script
 
-  cp .env.example .env
+└── README.md                 # This file
 
-  #Edit .env with your configuration
+## Quick Start
 
-🛠️ Usage
+## Prerequisites
 
-Task 1: Data Collection & Preprocessing
+Python 3.8 or higher
 
-# Run data collection
+PostgreSQL 14 or higher
 
-python src/data_collection.py
+## Installation Steps
 
-# Run preprocessing
+1. Clone the repository:
 
-python src/data_preprocessing.py
+git clone https://github.com/Saronzeleke/sentiment-analysis-week2.git
 
-# Or use notebooks
+cd sentiment-analysis-week2
 
-jupyter notebook notebooks\01_data_collection.ipynb
+2. Create and activate a virtual environment
 
-Task 2: Sentiment & Thematic Analysis
+  python -m venv my_env
 
-# Run analysis pipeline
+source my_env/bin/activate  # On macOS/Linux
 
-python src/sentiment_analysis.py
+# or
 
-# Or use notebook
+my_env\Scripts\activate     # On Windows
 
-jupyter notebook notebooks/03_sentiment_analysis.ipynb
+3. Install dependencies
 
-📋 Task Implementation
+pip install -r requirements.txt
 
-✅ Task 1: Data Collection & Preprocessing
+pip install -r requirements_task4.txt  # For visualization tools in Task 4
 
-Scraping: 400+ reviews per bank using google-play-scraper
+4. Configure the environment:
 
-Cleaning: Handle missing values, normalize dates, remove duplicates
+Copy .env.example to .env and update with your PostgreSQL credentials.
 
-Output: Clean CSV with review, rating, date, bank, source columns
+5. Run the tasks sequentially
 
-Git: Proper branching (task-1) with meaningful commits
+python scripts/task1_collect.py    # Task 1: Data collection
 
-🔄 Task 2: Sentiment & Thematic Analysis
+python scripts/task2_analyze.py    # Task 2: Sentiment analysis
 
-Sentiment: distilBERT model for sentiment scoring
+python scripts/task3_database.py   # Task 3: Database implementation
 
-Themes: TF-IDF keyword extraction + manual clustering
+python scripts/task4_insights.py   # Task 4: Insights and recommendations
 
-Insights: 3-5 themes per bank with examples
+## Task Details
 
-Output: CSV with sentiment labels and assigned themes
+**Task 1: Data Collection and Preprocessing (Completed)**
 
-📊 Analysis Methodology
+## Objectives:
 
-Sentiment Analysis
+Scrape at least 400 reviews per bank (totaling over 1,200 reviews) from the Google Play Store.
 
-Model: distilbert-base-uncased-finetuned-sst-2-english
+Clean the data by removing duplicates, handling missing values, and normalizing dates.
 
-Fallback: Rule-based approach using keyword matching
+Save the processed data as a CSV file for further analysis.
 
-Output: Positive/Negative/Neutral labels with confidence scores
+## Implementation:
 
-Thematic Analysis
+Utilizes src.data.scraper.GooglePlayScraper for data collection and src.data.preprocessor.DataCleaner for preprocessing. The cleaned 
 
-Keyword Extraction: TF-IDF with n-grams (1-2 words)
+dataset is stored in data/processed/banking_reviews.csv.
 
-Theme Clustering: Manual grouping based on predefined categories
+## Outputs:
 
-Categories: Login Issues, Transaction Problems, App Performance, UI/UX, Customer Service, Feature Requests
+Raw data in data/raw/.
 
-📈 Expected Deliverables
+Cleaned dataset with over 1,200 reviews, meeting the requirement of 400+ per bank.
 
-Data Quality Metrics
+**Task 2: Sentiment and Thematic Analysis (Completed)**
 
-✅ 1,200+ total reviews (400+ per bank)
+## Objectives:
 
-✅ <5% data error rate
+Compute sentiment scores using NLP models (DistilBERT and VADER).
 
-✅ Complete preprocessing pipeline
+Extract keywords and themes using TF-IDF and spaCy.
 
-Analytical Insights
+Cluster feedback into actionable categories.
 
-✅ Sentiment scores for 90%+ reviews
+Save the results as a CSV file.
 
-✅ 3+ identified themes per bank
+## Implementation:
 
-✅ Actionable pain points and drivers
+Employs src.nlp.sentiment.SentimentAnalyzer for sentiment scoring and src.nlp.themes.ThemeExtractor for theme identification. Results are
 
-Technical Excellence
+ combined and saved in data/processed/reviews_with_sentiment.csv.
 
-✅ Modular, documented code
+## Outputs:
 
-✅ Proper Git practices with task branches
+Sentiment labels (positive, neutral, negative) and scores.
 
-✅ Comprehensive README and documentation
+3-5 identified themes per bank.
 
-🗂️ File Descriptions
+Keyword clusters and complete analyzed dataset.
 
-Configuration
+**Task 3: PostgreSQL Database Implementation (Completed)**
 
-config/banks_config.py - App IDs, bank names, file paths
+## Objectives:
 
-.env - Environment variables (API keys, settings)
+Design and implement a relational database schema in PostgreSQL.
 
-Source Code
+Insert cleaned review data using Python (psycopg2).
 
-src/data_collection.py - Google Play Store scraping
+Verify data integrity with SQL queries.
 
-src/preprocessing.py - Data cleaning and validation
+Generate an SQL dump for deployment.
 
-src/sentiment_analysis.py - NLP analysis and insights
+## Database Schema:
+-- Banks Table
+CREATE TABLE banks (
+    bank_id SERIAL PRIMARY KEY,
+    bank_name VARCHAR(100) NOT NULL,
+    app_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-Data
+-- Reviews Table
+CREATE TABLE reviews (
+    review_id SERIAL PRIMARY KEY,
+    bank_id INTEGER REFERENCES banks(bank_id),
+    review_text TEXT NOT NULL,
+    rating NUMERIC(3,1) CHECK (rating >= 1 AND rating <= 5),
+    review_date DATE,
+    sentiment_label VARCHAR(20) CHECK (sentiment_label IN ('positive', 'neutral', 'negative')),
+    sentiment_score NUMERIC(4,3) CHECK (sentiment_score >= -1 AND sentiment_score <= 1),
+    source VARCHAR(50) DEFAULT 'Google Play Store',
+    cleaned_text TEXT,
+    keywords TEXT[],
+    theme VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-data/raw data/ - Original scraped data
+## Implementation:
 
-data/processed data/ - Cleaned and analyzed data
+Run python scripts/task3_database.py or python setup_database.py to create the database and insert data.
 
-🔧 Configuration
+## Verification Queries:
 
-Edit config/banks_config.py to modify:
+Total reviews: SELECT COUNT(*) FROM reviews; (Expected: 1,200+).
 
-Target banks and their app IDs
+Reviews per bank: SELECT b.bank_name, COUNT(r.review_id) FROM banks b LEFT JOIN reviews r ON b.bank_id = r.bank_id GROUP BY b.bank_name; 
 
-Number of reviews to scrape
+(Expected: 400+ per bank).
 
-Analysis parameters
+Average rating: SELECT b.bank_name, ROUND(AVG(r.rating)::numeric, 2) FROM banks b LEFT JOIN reviews r ON b.bank_id = r.bank_id GROUP BY b.
 
-File paths and output locations
+bank_name ORDER BY avg_rating DESC;.
 
-📝 Evaluation Criteria
+## Outputs:
 
-This project is designed to meet all specified evaluation criteria:
+Database bank_reviews created with over 1,200 reviews inserted.
 
-Task 1: Data Collection & Preprocessing (6 points)
+SQL dump: bank_reviews_schema.sql.
 
-✅ 400+ reviews per bank (1,200+ total)
+Verification report confirming data integrity.
 
-✅ Proper data cleaning and normalization
+**Task 4: Insights and Recommendations (Completed)**
 
-✅ CSV output with required columns
+## Objectives:
 
-✅ Git best practices with task-1 branch
 
-Task 2: Sentiment & Thematic Analysis (5 points)
+Identify at least 2 satisfaction drivers and pain points per bank.
 
-✅ distilBERT sentiment analysis implementation
+Compare performance across banks.
 
-✅ TF-IDF keyword extraction
+Generate actionable recommendations.
 
-✅ 3+ themes per bank with examples
+Create at least 5 professional visualizations.
 
-✅ Modular pipeline code
+Address ethical considerations and biases.
 
-Git & GitHub Best Practices (4 points)
+Compile a comprehensive report (10+ pages).
 
-✅ Frequent, meaningful commits
+## Key Insights:
 
-✅ Proper task branching
+Bank,Satisfaction Drivers,Pain Points
 
-✅ Clear pull request history
+CBE,"User-friendly interface, Reliable transactions, Good customer support","App crashes, Slow loading, Complex interface"
 
-Repository Best Practices (4 points)
+BOA,"Fast performance, Easy navigation, Helpful features","Login issues, Transaction errors, Notification problems"
 
-✅ Complete .gitignore and requirements.txt
+Dashen,"Secure platform, Consistent uptime, Basic functionality","Frequent crashes, Very slow, Update complications"
 
-✅ Comprehensive README
 
-✅ Logical folder structure
+## Visualizations:
 
-Code Best Practices (4 points)
+Sentiment distribution (pie/bar charts).
 
-✅ Modular, documented code
+Rating comparison (box plots).
 
-✅ Error handling and validation
+Drivers and pain points (horizontal bar charts).
 
-✅ Meaningful variable names and comments
+Word clouds (frequent terms).
 
-🤝 Contributing
+Time series (sentiment trends).
 
-Fork the repository
+Additional: Recommendations priority matrix.
 
-Create a feature branch (git checkout -b feature/amazing-feature)
+## Actionable Recommendations:
 
-Commit changes (git commit -m 'Add amazing feature')
+High Priority: Fix app stability, simplify authentication, optimize performance.
 
-Push to branch (git push origin feature/amazing-feature)
+## Bank-Specific:
 
-Open a Pull Request
+CBE: Simplify interface, add progress indicators.
 
-📄 License
+BOA: Fix transaction validation, enhance error messages.
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Dashen: Resolve crashes, improve update process.
 
-🙏 Acknowledgments
 
-google-play-scraper library for review collection
+## Implementation:
+Run python scripts/task4_insights.py or
 
-Hugging Face Transformers for sentiment analysis
+explore notebooks/task4_insights.ipynb.
 
-spaCy for NLP processing
+## Outputs:
 
-Ethiopian banking community for valuable feedback
+Comprehensive report: reports/final_report.md.
+
+Visualizations in reports/visualizations/.
+
+Raw insights: reports/task4_insights.json.
+
+Ethical considerations documented.
+
+## Results Summary
+
+**Metric        ,CBE    ,BOA,       Dashen,           Overall**
+
+AvgRating,    3.81/5, 4.08/5,      3.52/5,            3.80/5
+
+Positive %,    42.5%,   48.3%,      35.8%,           42.2%
+
+Review Count,   400+,    400+,       400+            ,"1,200+"
+
+Key Strength,   Reliability,  Speed,  Security,-  StrengthReliabilitySpeedSecurity-
+
+
+
+## Requirements Met
+
+Task      ,Requirement,      Status,           Evidence
+
+1,400+ reviews perbank,        ✅,             data/processed/banking_reviews.csv
+
+2,Sentiment scores + themes,   ✅,             reviews_with_sentiment.csv
+
+3,"PostgreSQL with 1,000+ reviews",✅,         Database verification queries
+
+4,2+ drivers/pain points per bank,✅,          Final report sections 3-4
+
+4,5+ visualizations,        ✅,                        reports/visualizations/
+
+4,10+ page report,        ✅,                          reports/final_report.md
+
+## Generated Reports:
+
+reports/final_report.md: Includes executive summary, performance comparison, drivers/pain points, recommendations, ethical 
+
+considerations, and implementation roadmap.
+
+database_verification_report.json: Data integrity checks, review counts, and quality metrics.
+
+## Code Documentation:
+
+All scripts include docstrings and comments.
+
+SQL schema is documented with constraints.
+
+Notebooks feature markdown explanations.
+
+This README provides setup and usage instructions.
+
+
+## Contributing
+
+Fork the repository.
+
+Create a feature branch: git checkout -b feature/improvement.
+
+Commit changes: git commit -am 'Add some feature'.
+
+Push to the branch: git push origin feature/improvement.
+
+Create a Pull Request.
+
+
+## License
+
+This project is intended for educational purposes as part of a data science coursework.
+
+## Authors
+
+Saron Zeleke – Complete project implementation
+
+## Acknowledgments
+
+Google Play Store for providing review data.
+
+PostgreSQL community for the robust database system.
+
+Open-source libraries including pandas, scikit-learn, and transformers.
+
+Course facilitators and reviewers.
+
+## Project Status
+
+All tasks (1-4) are complete.
+
+Last Updated: December 2025
+
+Repository: https://github.com/Saronzeleke/sentiment-analysis-week2
+
+Contact: For questions regarding implementation or analysis, please open an issue on GitHub.
